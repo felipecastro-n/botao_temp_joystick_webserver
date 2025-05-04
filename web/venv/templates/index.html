@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rosa dos Ventos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+        .compass-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 0 auto;
+        }
+        .compass {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid #333;
+            position: relative;
+            background: #f5f5f5;
+        }
+        .direction {
+            position: absolute;
+            font-weight: bold;
+        }
+        .north { top: 10px; left: 50%; transform: translateX(-50%); }
+        .south { bottom: 10px; left: 50%; transform: translateX(-50%); }
+        .east { right: 10px; top: 50%; transform: translateY(-50%); }
+        .west { left: 10px; top: 50%; transform: translateY(-50%); }
+        .northeast { top: 20%; right: 20%; }
+        .northwest { top: 20%; left: 20%; }
+        .southeast { bottom: 20%; right: 20%; }
+        .southwest { bottom: 20%; left: 20%; }
+        .center { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        
+        .indicator {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: red;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .active {
+            color: red;
+            font-size: 1.2em;
+        }
+        
+        .data-container {
+            margin-top: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            display: inline-block;
+        }
+        
+        .refresh-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .refresh-btn:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Rosa dos Ventos</h1>
+    <div class="compass-container">
+        <div class="compass">
+            <div class="direction north" id="norte">N</div>
+            <div class="direction south" id="sul">S</div>
+            <div class="direction east" id="leste">L</div>
+            <div class="direction west" id="oeste">O</div>
+            <div class="direction northeast" id="nordeste">NE</div>
+            <div class="direction northwest" id="noroeste">NO</div>
+            <div class="direction southeast" id="sudeste">SE</div>
+            <div class="direction southwest" id="sudoeste">SO</div>
+            <div class="direction center" id="centro">C</div>
+            
+            <!-- Indicador da posição atual -->
+            <div class="indicator" id="indicator"></div>
+        </div>
+    </div>
+    
+    <div class="data-container">
+        <h3>Dados do Sensor</h3>
+        <p>Direção atual: <span id="direcao-atual">{{ direcao }}</span></p>
+        <p>Temperatura: <span id="temperatura">Carregando...</span></p>
+        <p>Botão: <span id="botao">Carregando...</span></p>
+        <p>Coordenadas: X: <span id="coord-x">Carregando...</span>, Y: <span id="coord-y">Carregando...</span></p>
+    </div>
+    
+    <button class="refresh-btn" onclick="atualizarDados()">Atualizar Dados</button>
+    
+    <script>
+        // Posiciona o indicador com base na direção
+        function posicionarIndicador(direcao) {
+            const indicator = document.getElementById('indicator');
+            const compass = document.querySelector('.compass');
+            const width = compass.offsetWidth;
+            const height = compass.offsetHeight;
+            const center = width / 2;
+            
+            // Remove classe ativa de todas as direções
+            document.querySelectorAll('.direction').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // Adiciona classe ativa à direção atual
+            let directionElement;
+            
+            switch(direcao) {
+                case 'Norte':
+                    indicator.style.left = `${center}px`;
+                    indicator.style.top = '30px';
+                    directionElement = document.getElementById('norte');
+                    break;
+                case 'Sul':
+                    indicator.style.left = `${center}px`;
+                    indicator.style.top = `${height - 30}px`;
+                    directionElement = document.getElementById('sul');
+                    break;
+                case 'Leste':
+                    indicator.style.left = `${width - 30}px`;
+                    indicator.style.top = `${center}px`;
+                    directionElement = document.getElementById('leste');
+                    break;
+                case 'Oeste':
+                    indicator.style.left = '30px';
+                    indicator.style.top = `${center}px`;
+                    directionElement = document.getElementById('oeste');
+                    break;
+                case 'Nordeste':
+                    indicator.style.left = `${width - 50}px`;
+                    indicator.style.top = '50px';
+                    directionElement = document.getElementById('nordeste');
+                    break;
+                case 'Noroeste':
+                    indicator.style.left = '50px';
+                    indicator.style.top = '50px';
+                    directionElement = document.getElementById('noroeste');
+                    break;
+                case 'Sudeste':
+                    indicator.style.left = `${width - 50}px`;
+                    indicator.style.top = `${height - 50}px`;
+                    directionElement = document.getElementById('sudeste');
+                    break;
+                case 'Sudoeste':
+                    indicator.style.left = '50px';
+                    indicator.style.top = `${height - 50}px`;
+                    directionElement = document.getElementById('sudoeste');
+                    break;
+                case 'Centro':
+                default:
+                    indicator.style.left = `${center}px`;
+                    indicator.style.top = `${center}px`;
+                    directionElement = document.getElementById('centro');
+                    break;
+            }
+            
+            if (directionElement) {
+                directionElement.classList.add('active');
+            }
+        }
+        
+        // Função para atualizar os dados via API
+        function atualizarDados() {
+            fetch('/api/dados')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('direcao-atual').textContent = data.direcao;
+                    document.getElementById('temperatura').textContent = data.temperature.toFixed(2) + '°C';
+                    document.getElementById('botao').textContent = data.button ? 'Pressionado' : 'Não pressionado';
+                    document.getElementById('coord-x').textContent = data.x;
+                    document.getElementById('coord-y').textContent = data.y;
+                    
+                    posicionarIndicador(data.direcao);
+                })
+                .catch(error => console.error('Erro ao buscar dados:', error));
+        }
+        
+        // Inicializa o indicador com a direção atual
+        document.addEventListener('DOMContentLoaded', function() {
+            const direcaoAtual = document.getElementById('direcao-atual').textContent;
+            posicionarIndicador(direcaoAtual);
+            atualizarDados();
+            
+            // Atualiza os dados a cada 2 segundos
+            setInterval(atualizarDados, 2000);
+        });
+    </script>
+</body>
+</html>
