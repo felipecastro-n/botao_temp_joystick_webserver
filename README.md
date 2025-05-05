@@ -5,7 +5,7 @@ Sistema integrado para monitoramento de direção via joystick, temperatura e es
 ## Funcionalidades Principais
 
 🎮 **Controle por Joystick Analógico:**
-- Detecção de 9 direções da rosa dos ventos
+- Detecção de 8 direções da rosa dos ventos
 - Leitura precisa dos eixos X/Y (12-bit ADC)
 - Threshold ajustável para precisão do movimento
 
